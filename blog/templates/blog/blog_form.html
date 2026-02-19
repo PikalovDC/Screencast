@@ -1,0 +1,166 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Skystore - 
+    {% if object %}
+        Редактирование записи
+    {% else %}
+        Новая запись
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+    .form-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+    }
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        padding: 10px;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    .image-preview {
+        max-width: 200px;
+        max-height: 200px;
+        margin-top: 10px;
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block header %}
+{% include 'blog/menu.html' %}
+
+<nav aria-label="breadcrumb" class="container mt-2">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'blog:list' %}">Блог</a></li>
+        <li class="breadcrumb-item active" aria-current="page">
+            {% if object %}
+                Редактирование: {{ object.title|truncatechars:30 }}
+            {% else %}
+                Новая запись
+            {% endif %}
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="form-container">
+        <div class="form-header">
+            <h2 class="display-6">
+                {% if object %}
+                    Редактирование записи
+                {% else %}
+                    Новая запись в блоге
+                {% endif %}
+            </h2>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Заголовок -->
+            <div class="form-group">
+                <label for="id_title" class="form-label">Заголовок *</label>
+                <input type="text" name="title" id="id_title" class="form-control" 
+                       value="{{ form.title.value|default:'' }}" required>
+                {% if form.title.errors %}
+                <div class="text-danger small">{{ form.title.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Содержимое -->
+            <div class="form-group">
+                <label for="id_content" class="form-label">Содержимое</label>
+                <textarea name="content" id="id_content" class="form-control" rows="8">{{ form.content.value|default:'' }}</textarea>
+                {% if form.content.errors %}
+                <div class="text-danger small">{{ form.content.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Изображение -->
+            <div class="form-group">
+                <label for="id_preview" class="form-label">Превью</label>
+                <input type="file" name="preview" id="id_preview" class="form-control" accept="image/*">
+                {% if form.preview.errors %}
+                <div class="text-danger small">{{ form.preview.errors }}</div>
+                {% endif %}
+                
+                {% if object and object.preview %}
+                <div class="mt-2">
+                    <p class="mb-1"><small>Текущее изображение:</small></p>
+                    <img src="{{ object.preview.url }}" alt="Текущее превью" style="max-height: 100px;">
+                </div>
+                {% endif %}
+                
+                <!-- Предпросмотр нового изображения -->
+                <img id="image-preview" class="image-preview img-thumbnail mt-2" alt="Предпросмотр">
+            </div>
+
+            <!-- Публикация -->
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" name="is_published" id="id_is_published" class="form-check-input"
+                           {% if form.is_published.value %}checked{% endif %}>
+                    <label class="form-check-label" for="id_is_published">
+                        Опубликовать сразу
+                    </label>
+                </div>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a href="{% url 'blog:list' %}" class="btn btn-outline-secondary">
+                    Отмена
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}Сохранить{% else %}Создать{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Предпросмотр изображения
+    document.getElementById('id_preview').addEventListener('change', function(e) {
+        const preview = document.getElementById('image-preview');
+        const file = e.target.files[0];
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

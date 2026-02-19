@@ -1,0 +1,90 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Skystore - {{ post.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .blog-image {
+        max-height: 400px;
+        object-fit: contain;
+        border-radius: 10px;
+    }
+    .blog-meta {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .blog-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+</style>
+{% endblock %}
+
+{% block header %}
+{% include 'blog/menu.html' %}
+
+<nav aria-label="breadcrumb" class="container mt-2">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'blog:list' %}">Блог</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ post.title|truncatechars:30 }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Кнопки управления -->
+    <div class="action-buttons mb-4">
+        <a href="{% url 'blog:update' post.pk %}" class="btn btn-outline-warning">
+             Редактировать
+        </a>
+        <a href="{% url 'blog:delete' post.pk %}" class="btn btn-outline-danger">
+             Удалить
+        </a>
+    </div>
+
+    <!-- Заголовок -->
+    <h1 class="display-5 mb-4">{{ post.title }}</h1>
+
+    <!-- Мета-информация -->
+    <div class="blog-meta d-flex justify-content-between align-items-center">
+        <div>
+            <strong> Дата создания:</strong> {{ post.created_at|date:"d.m.Y H:i" }}
+        </div>
+        <div>
+            <strong> Просмотров:</strong> {{ post.views_count }}
+        </div>
+        <div>
+            <span class="badge {% if post.is_published %}bg-success{% else %}bg-secondary{% endif %}">
+                {{ post.is_published|yesno:"Опубликовано,Черновик" }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Изображение -->
+    {% if post.preview %}
+    <div class="text-center mb-4">
+        <img src="{{ post.preview.url }}" class="img-fluid blog-image" alt="{{ post.title }}">
+    </div>
+    {% endif %}
+
+    <!-- Содержимое -->
+    <div class="blog-content">
+        {{ post.content|linebreaks }}
+    </div>
+
+    <!-- Навигация -->
+    <div class="mt-5">
+        <a href="{% url 'blog:list' %}" class="btn btn-outline-primary">
+            ← Назад к списку
+        </a>
+    </div>
+</div>
+{% endblock %}
