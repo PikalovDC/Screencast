@@ -1,0 +1,71 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Skystore - Удаление товара{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .warning-icon {
+        font-size: 4rem;
+        color: #dc3545;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block header %}
+{% include 'catalog/menu.html' %}
+
+<nav aria-label="breadcrumb" class="container mt-2">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'catalog:home' %}">Главная</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'catalog:home' %}">Каталог</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'catalog:product_detail' product.pk %}">{{ product.title|truncatechars:30 }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Удаление</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="delete-container">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white text-center">
+                <h4 class="mb-0">Подтверждение удаления</h4>
+            </div>
+            <div class="card-body text-center py-4">
+                <div class="warning-icon">⚠️</div>
+                
+                <h5 class="mb-4">Вы уверены, что хотите удалить товар?</h5>
+                
+                <div class="alert alert-warning">
+                    <h3 class="text-dark mb-3">"{{ product.title }}"</h3>
+                    <p class="text-muted mb-0">
+                        <small>Цена: ${{ product.price }}</small><br>
+                        <small>Категория: {{ product.category.name }}</small>
+                    </p>
+                </div>
+                
+                <p class="text-danger mb-4">
+                    <strong>Это действие нельзя отменить!</strong>
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="submit" class="btn btn-danger px-4">
+                            🗑️ Да, удалить
+                        </button>
+                        <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-outline-secondary px-4">
+                            ❌ Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
