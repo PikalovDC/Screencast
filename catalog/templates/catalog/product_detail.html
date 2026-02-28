@@ -41,6 +41,15 @@
 
 {% block content %}
 <div class="container mt-4">
+    <div class="action-buttons mb-4">
+        <a href="{% url 'catalog:product_update' product.pk %}" class="btn btn-outline-warning">
+            ✏️ Редактировать
+        </a>
+        <a href="{% url 'catalog:product_delete' product.pk %}" class="btn btn-outline-danger">
+            🗑️ Удалить
+        </a>
+    </div>
+
     <div class="row">
         <div class="col-md-6 mb-4">
             <div class="card">

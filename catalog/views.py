@@ -1,10 +1,44 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from django.http import HttpResponse
+from pyexpat.errors import messages
+
 from catalog.models import Product, Category
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, View
+from .forms import ProductForm
+from django.contrib import messages
+
+
+class ProductCreateView(CreateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'catalog/product_form.html'
+    success_url = reverse_lazy('catalog:home')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Товар успешно создан')
+        return super().form_valid(form)
+
+
+class ProductUpdateView(UpdateView):
+    model = Product
+    form_class = ProductForm
+    template_name = 'catalog/product_form.html'
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Товар успешно обновлен!')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('catalog:product_detail', kwargs={'pk': self.object.pk})
+
+class ProductDeleteView(DeleteView):
+    model = Product
+    template_name = 'catalog/product_confirm_delete.html'
+    success_url = reverse_lazy('catalog:home')
+    context_object_name = 'product'
 
 
 class ProductDetailView(DetailView):
