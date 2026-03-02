@@ -1,0 +1,110 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Skystore - Вход{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        max-width: 400px;
+        margin: 50px auto;
+        padding: 30px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    .auth-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        display: block;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    .form-control:focus {
+        border-color: #0d6efd;
+        outline: none;
+    }
+    .errorlist {
+        color: #dc3545;
+        list-style: none;
+        padding: 0;
+        margin: 5px 0 0;
+        font-size: 0.9rem;
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+</style>
+{% endblock %}
+
+{% block header %}
+{% include 'users/menu.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2>Вход в систему</h2>
+            <p class="text-muted">Войдите, чтобы продолжить</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label>Email</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                <ul class="errorlist">
+                    {% for error in form.username.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label>Пароль</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                <ul class="errorlist">
+                    {% for error in form.password.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                Войти
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Нет аккаунта? <a href="{% url 'users:register' %}">Зарегистрироваться</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

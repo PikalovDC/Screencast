@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from django.http import HttpResponse
@@ -11,11 +12,14 @@ from .forms import ProductForm
 from django.contrib import messages
 
 
-class ProductCreateView(CreateView):
+class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Product
     form_class = ProductForm
     template_name = 'catalog/product_form.html'
     success_url = reverse_lazy('catalog:home')
+
+    login_url = 'users:login'
+    redirect_field_name = 'next'
 
     def form_valid(self, form):
         messages.success(self.request, 'Товар успешно создан')
