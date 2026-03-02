@@ -8,6 +8,14 @@ User = get_user_model()
 
 class UserRegistrationForm(UserCreationForm):
     """Форма регистрации пользователя с email и паролем"""
+
+    username = forms.CharField(
+        label='Имя пользователя',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Введите имя пользователя'
+        })
+    )
     email = forms.EmailField(
         label='Email',
         widget=forms.EmailInput(attrs={
@@ -32,7 +40,7 @@ class UserRegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('email', 'password1', 'password2')
+        fields = ('username', 'email', 'password1', 'password2')
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
