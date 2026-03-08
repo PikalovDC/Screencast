@@ -41,14 +41,40 @@
 
 {% block content %}
 <div class="container mt-4">
+
+    <div class="mb-3">
+        <span class="badge {% if product.is_published %}bg-success{% else %}bg-secondary{% endif %}">
+            {{ product.is_published|yesno:"Опубликовано,Не опубликовано" }}
+        </span>
+        {% if product.owner %}
+            <span class="badge bg-info">Владелец: {{ product.owner.email }}</span>
+        {% endif %}
+    </div>
+
     <div class="action-buttons mb-4">
+        {% if user == product.owner %}
         <a href="{% url 'catalog:product_update' product.pk %}" class="btn btn-outline-warning">
             ✏️ Редактировать
         </a>
+        {% endif %}
+        {% if user == product.owner or perms.catalog.delete_product %}
         <a href="{% url 'catalog:product_delete' product.pk %}" class="btn btn-outline-danger">
             🗑️ Удалить
         </a>
+        {% endif %}
+
+        {% if perms.catalog.can_unpublish_product and product.is_published %}
+            <form method="post" action="{% url 'catalog:product_unpublish' product.pk %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary">
+                    📤 Снять с публикации
+                </button>
+            </form>
+        {% endif %}
+
     </div>
+
+
 
     <div class="row">
         <div class="col-md-6 mb-4">
