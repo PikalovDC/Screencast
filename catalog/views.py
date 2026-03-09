@@ -10,7 +10,51 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, View
 from .forms import ProductForm
 from django.contrib import messages
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from .services import ProductService
+from django.core.cache import cache
 
+
+class CategoryProductsView(ListView):
+    model = Product
+    template_name = 'catalog/category_products.html'
+    context_object_name = 'products'
+    paginate_by = 6
+
+    def get_queryset(self):
+        category_id = self.kwargs.get('category_id')
+        cache_key = f'category_products_{category_id}'
+
+        products = cache.get(cache_key)
+        if not products:
+            products = Product.objects.filter(category_id=category_id, is_published=True)
+            cache.set(cache_key, products, 300)
+
+        return products
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_id = self.kwargs.get('category_id')
+
+        # Кешируем категорию
+        cache_key = f'category_{category_id}'
+        category = cache.get(cache_key)
+        if not category:
+            category = get_object_or_404(Category, id=category_id)
+            cache.set(cache_key, category, 600)
+
+        context['category'] = category
+
+        # Кешируем список категорий для бокового меню
+        categories = cache.get('all_categories')
+        if not categories:
+            categories = Category.objects.all()
+            cache.set('all_categories', categories, 600)
+
+        context['categories'] = categories
+
+        return context
 
 class ProductUnpublishView(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = 'catalog.can_unpublish_product'
@@ -80,6 +124,7 @@ class ProductDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
         return super().delete(request, *args, **kwargs)
 
 
+@method_decorator(cache_page(60 * 15), name='dispatch')
 class ProductDetailView(DetailView):
     model = Product
     template_name = 'catalog/product_detail.html'
@@ -93,15 +138,41 @@ class HomeListView(ListView):
     paginate_by = 6
 
     def get_queryset(self):
-        return Product.objects.filter(is_published=True)
 
-    def get_context_data(self, *, object_list=None, **kwargs):
+        products = cache.get('home_products')
+        if not products:
+            products = Product.objects.filter(is_published=True)
+            cache.set('home_products', products, 300)
+
+        return products
+
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        all_products = Product.objects.all()
-        context['total_products'] = all_products.count()
-        context['categories_count'] = all_products.values('category').distinct().count()
-        return context
 
+        # Кешируем статистику
+        stats = cache.get('home_stats')
+        if not stats:
+            all_products = Product.objects.all()
+            total_products = all_products.count()
+            categories_count = all_products.values('category').distinct().count()
+            stats = {
+                'total_products': total_products,
+                'categories_count': categories_count,
+            }
+            cache.set('home_stats', stats, 300)
+
+        context['total_products'] = stats['total_products']
+        context['categories_count'] = stats['categories_count']
+
+        # Кешируем список категорий
+        categories = cache.get('all_categories')
+        if not categories:
+            categories = Category.objects.all()
+            cache.set('all_categories', categories, 600)  # 10 минут
+
+        context['categories'] = categories
+
+        return context
 
 class ContactsView(View):
     def get(self, request):
