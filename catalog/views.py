@@ -28,7 +28,7 @@ class CategoryProductsView(ListView):
 
         products = cache.get(cache_key)
         if not products:
-            products = Product.objects.filter(category_id=category_id, is_published=True)
+            products = ProductService.get_products_by_category(category_id)
             cache.set(cache_key, products, 300)
 
         return products
